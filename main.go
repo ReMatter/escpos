@@ -3,10 +3,13 @@ package escpos
 import (
 	"bufio"
 	"fmt"
-	"github.com/qiniu/iconv"
 	"image"
 	"io"
 	"math"
+
+	"golang.org/x/text/encoding"
+	"golang.org/x/text/encoding/charmap"
+	"golang.org/x/text/encoding/simplifiedchinese"
 )
 
 type Style struct {
@@ -145,24 +148,20 @@ func (e *Escpos) Write(data string) (int, error) {
 
 // WriteGBK writes a string to the printer using GBK encoding
 func (e *Escpos) WriteGBK(data string) (int, error) {
-	cd, err := iconv.Open("gbk", "utf-8")
-	if err != nil {
-		return 0, err
-	}
-	defer cd.Close()
-	gbk := cd.ConvString(data)
-	return e.Write(gbk)
+	return e.writeEncoded(data, simplifiedchinese.GBK.NewEncoder())
 }
 
 // WriteWEU writes a string to the printer using Western European encoding
 func (e *Escpos) WriteWEU(data string) (int, error) {
-	cd, err := iconv.Open("cp850", "utf-8")
+	return e.writeEncoded(data, charmap.CodePage850.NewEncoder())
+}
+
+func (e *Escpos) writeEncoded(data string, encoder *encoding.Encoder) (int, error) {
+	encoded, err := encoder.String(data)
 	if err != nil {
 		return 0, err
 	}
-	defer cd.Close()
-	weu := cd.ConvString(data)
-	return e.Write(weu)
+	return e.Write(encoded)
 }
 
 // Sets the printer to print Bold text.

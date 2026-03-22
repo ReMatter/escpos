@@ -1,5 +1,7 @@
 module github.com/hennedo/escpos
 
-go 1.14
+go 1.23.0
 
-require github.com/qiniu/iconv v1.2.0
+toolchain go1.24.6
+
+require golang.org/x/text v0.24.0
